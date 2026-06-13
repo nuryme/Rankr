@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RANKR
 
-## Getting Started
+A personal YouTube optimization tool — drop in a video and get AI-generated
+titles, thumbnails, a description, tags, and an overall optimization score.
 
-First, run the development server:
+**Live:** [rankr-chi.vercel.app](https://rankr-chi.vercel.app)
+
+---
+
+## How it works
+
+1. **Upload** — drop a video file (up to 10 minutes / 300MB)
+2. **Analyzing** — frames are extracted client-side, then sent through a two-stage Gemini pipeline:
+   - **Stage 1 (vision):** frames → video description + best thumbnail frame picks
+   - **Stage 2 (text):** description → titles, description, tags, overall score
+3. **Results wizard** — a 5-step flow to review and pick:
+   - Title (4 AI options)
+   - Thumbnail (4 AI-picked frames, canvas-enhanced, or upload your own)
+   - Description
+   - Tags
+   - Overall score + export
+4. **Export** — copy the final title, description, and tags straight into YouTube Studio
+
+## Tech stack
+
+- **Framework:** Next.js (App Router) + React + TypeScript
+- **Styling:** Tailwind CSS + shadcn/ui
+- **AI:** Google Gemini API (multimodal vision + text)
+- **Hosting:** Vercel
+
+## Privacy & constraints
+
+- Video files are **never uploaded** — frames are extracted in the browser and only frames/text are sent to Gemini
+- Nothing is persisted — no database, no accounts; everything lives in memory for the session and clears on refresh
+- Personal-use project: no payments, no rate limiting, no access gate
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create `.env.local` (see `.env.example`):
 
-## Learn More
+```
+GOOGLE_GEMINI_API_KEY=your_key_here
+```
 
-To learn more about Next.js, take a look at the following resources:
+Get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deployed on Vercel. `GOOGLE_GEMINI_API_KEY` must be set in the project's
+Environment Variables (Settings → Environment Variables) — `.env.local` is
+not used in production.
