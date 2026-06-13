@@ -39,11 +39,11 @@ export default function Upload({ onFileAccepted }: UploadProps) {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-[640px] text-center">
-        <h1 className="font-heading text-[clamp(40px,5vw,48px)] font-bold tracking-[-0.02em] text-[var(--text)]">
+      <div className="w-full max-w-160 text-center">
+        <h1 className="font-heading text-[clamp(40px,5vw,48px)] font-bold tracking-[-0.02em] text-(--text)">
           RANKR
         </h1>
-        <p className="mt-3 text-[clamp(16px,2.2vw,19px)] leading-[1.55] text-[var(--muted)]">
+        <p className="mt-3 text-[clamp(16px,2.2vw,19px)] leading-[1.55] text-muted">
           Drop a video to get AI-generated titles, thumbnails, descriptions, and tags.
         </p>
 
@@ -55,23 +55,23 @@ export default function Upload({ onFileAccepted }: UploadProps) {
           }}
           onDragLeave={() => setIsDragOver(false)}
           onDrop={handleDrop}
-          className={`mt-8 flex cursor-pointer flex-col items-center gap-[var(--gap-md)] rounded-[var(--r-xl)] border-2 border-dashed bg-[var(--surface)] px-8 py-12 text-center transition-colors hover:border-[var(--accent)] hover:bg-[var(--surface-2)] sm:px-12 ${
+          className={`mt-8 flex cursor-pointer flex-col items-center gap-(--gap-md) rounded-(--r-xl) border-2 border-dashed bg-(--surface) px-8 py-12 text-center transition-colors hover:border-accent hover:bg-(--surface-2) sm:px-12 ${
             isDragOver
-              ? "border-[var(--accent)] bg-[var(--surface-2)]"
-              : "border-[var(--border)]"
+              ? "border-accent bg-(--surface-2)"
+              : "border-border"
           }`}
         >
-          <div className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-[var(--surface-2)]">
-            <UploadCloud className="h-5 w-5 text-[var(--muted)]" aria-hidden="true" />
+          <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-(--surface-2)">
+            <UploadCloud className="h-5 w-5 text-muted" aria-hidden="true" />
           </div>
 
-          <p className="text-[var(--text)]">
+          <p className="text-(--text)">
             <span className="font-medium">Drop your video here or click to upload</span>
-            <span className="text-[var(--muted)]"> · MP4 / MOV · up to 10 min, 1GB</span>
+            <span className="text-muted"> · MP4 / MOV · up to 10 min, 1GB</span>
           </p>
 
           {isValidating && (
-            <p className="text-sm text-[var(--muted)]" role="status">
+            <p className="text-sm text-muted" role="status">
               Checking video...
             </p>
           )}
@@ -88,13 +88,13 @@ export default function Upload({ onFileAccepted }: UploadProps) {
         {error && (
           <p
             role="alert"
-            className="mt-[var(--gap-md)] rounded-[var(--r-md)] border border-[var(--accent)] bg-[var(--surface)] px-[var(--gap-md)] py-[var(--gap-sm)] text-sm text-[var(--text)]"
+            className="mt-(--gap-md) rounded-(--r-md) border border-accent bg-(--surface) px-(--gap-md) py-(--gap-sm) text-sm text-(--text)"
           >
             {error}
           </p>
         )}
 
-        <p className="mt-[var(--gap-xl)] text-sm leading-[1.55] text-[var(--muted-2)]">
+        <p className="mt-(--gap-xl) text-sm leading-[1.55] text-(--muted-2)">
           Frames from your video are sent to Google&apos;s Gemini API for analysis.
           Nothing is uploaded to or stored on a server.
         </p>

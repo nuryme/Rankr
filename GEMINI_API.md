@@ -31,7 +31,7 @@ export const genAI = new GoogleGenerativeAI(
   process.env.GOOGLE_GEMINI_API_KEY!
 );
 
-export function getModel(modelName = "gemini-2.0-flash") {
+export function getModel(modelName = "gemini-2.5-flash") {
   return genAI.getGenerativeModel({ model: modelName });
 }
 ```
@@ -44,12 +44,16 @@ export function getModel(modelName = "gemini-2.0-flash") {
 
 | Model | Speed | Quality | Cost | Best For |
 |-------|-------|---------|------|----------|
-| **gemini-2.0-flash** | ⚡ Fastest | Excellent | $0.075/1M | **RANKR (vision + text)** |
-| gemini-1.5-flash | Fast | Very good | $0.075/1M | Budget |
-| gemini-1.5-pro | Slower | Best | $1.50/1M | Advanced reasoning |
+| **gemini-2.5-flash** | ⚡ Fast | Excellent | $0.075/1M | **RANKR (vision + text)** |
+| gemini-2.5-flash-lite | ⚡ Fastest | Good | cheaper | Budget / text-only |
+| gemini-3-flash-preview | Fast | Highest | preview | Bleeding edge (may change) |
 
-**Use `gemini-2.0-flash` for both stages.** It's multimodal — the same model
+**Use `gemini-2.5-flash` for both stages.** It's multimodal — the same model
 handles the image frames in Stage 1 and the text generation in Stage 2.
+
+> Note: the older **gemini-2.0-flash** family has been zeroed out of the free
+> tier (`429 RESOURCE_EXHAUSTED, limit: 0`). 2.5-flash has full quota. Verified
+> live via ListModels + per-model test on 2026-06-13.
 
 ### Free Tier Limits
 ```

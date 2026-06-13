@@ -8,7 +8,10 @@
 // each frame to actually be *presented* before drawing, because on 4K sources the
 // decoder often lags the `seeked` event and an immediate draw grabs a stale frame.
 
-const FRAME_COUNT = 8;
+// 12 = the server-side max accepted by /api/analyze. More frames = better odds
+// of catching short-lived on-screen text (title cards, captions) and more
+// thumbnail candidates, at a modest cost in extraction time + Gemini tokens.
+const FRAME_COUNT = 12;
 // 1280px wide = YouTube's 1280×720 thumbnail standard. These frames double as the
 // user's selectable thumbnails, so we keep enough resolution for that export while
 // still being small enough to send to Gemini. Downscaled from 4K by the canvas.

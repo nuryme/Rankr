@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Circle, CircleCheck, LoaderCircle, TriangleAlert } from "lucide-react";
 import { extractFrames } from "@/utils/frames";
+import { fetchAnalysis, fetchGeneration } from "@/utils/api-client";
 import type { AnalysisProgress, AnalysisResult, GeneratedContent } from "@/types";
 
 interface AnalyzingProps {
@@ -24,26 +25,6 @@ const STEPS: { stage: Stage; label: string }[] = [
   { stage: "analyzing", label: "Analyzing video content" },
   { stage: "generating", label: "Generating titles, tags & description" },
 ];
-
-// --- Stubbed Stage 1 / Stage 2. Real Gemini wiring lands in a later prompt. ---
-const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-
-async function analyzeStub(): Promise<
-  Pick<AnalysisResult, "description" | "thumbnailFrameIndices">
-> {
-  await delay(1000);
-  return { description: "placeholder", thumbnailFrameIndices: [0, 1, 2, 3] };
-}
-
-async function generateStub(): Promise<GeneratedContent> {
-  await delay(1000);
-  return {
-    titles: ["Title 1", "Title 2", "Title 3", "Title 4"],
-    description: "placeholder",
-    tags: ["tag1", "tag2"],
-    overallScore: 80,
-  };
-}
 
 export default function Analyzing({
   videoFile,
@@ -83,11 +64,17 @@ export default function Analyzing({
         if (fromIdx <= 1) {
           stage = "analyzing";
           setPhase("analyzing");
-          analysisRef.current = await analyzeStub();
+          // Stage 1 (vision). Frames are already extracted above (or cached from
+          // a previous run on a Stage-1 retry), so we never re-extract here.
+          analysisRef.current = await fetchAnalysis(framesRef.current!);
         }
         stage = "generating";
         setPhase("generating");
-        const generatedContent = await generateStub();
+        // Stage 2 (text). On a Stage-2-only retry we reuse the cached Stage 1
+        // description, so "Try Again" never re-calls /api/analyze.
+        const generatedContent = await fetchGeneration(
+          analysisRef.current!.description
+        );
 
         onComplete({
           analysisResult: {
@@ -121,34 +108,34 @@ export default function Analyzing({
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-[640px]">
-        <h2 className="text-center font-heading text-[26px] font-bold tracking-[-0.02em] text-[var(--text)]">
+      <div className="w-full max-w-160">
+        <h2 className="text-center font-heading text-[26px] font-bold tracking-[-0.02em] text-(--text)">
           Analyzing your video…
         </h2>
-        <p className="mt-2 text-center font-mono text-[11.5px] text-[var(--muted)]">
+        <p className="mt-2 text-center font-mono text-[11.5px] text-muted">
           {videoFile.name}
         </p>
 
         {phase === "error" ? (
           <div
             role="alert"
-            className="mt-8 flex animate-[fadeIn_0.3s_ease-out] flex-col items-center gap-[var(--gap-md)] rounded-[var(--r-lg)] border border-[var(--border)] bg-[var(--surface)] px-[var(--gap-xl)] py-[var(--gap-xl)] text-center"
+            className="mt-8 flex animate-[fadeIn_0.3s_ease-out] flex-col items-center gap-(--gap-md) rounded-(--r-lg) border border-border bg-(--surface) px-(--gap-xl) py-(--gap-xl) text-center"
           >
             <TriangleAlert
-              className="h-6 w-6 text-[var(--accent)]"
+              className="h-6 w-6 text-accent"
               aria-hidden="true"
             />
-            <p className="text-[var(--text)]">{errorMessage}</p>
+            <p className="text-(--text)">{errorMessage}</p>
             <button
               type="button"
               onClick={() => void runPipeline(failedStageRef.current)}
-              className="rounded-[var(--r-md)] border border-[var(--accent)] bg-[var(--accent)] px-[var(--gap-lg)] py-[var(--gap-sm)] font-medium text-white transition-transform active:scale-[0.98]"
+              className="rounded-(--r-md) border border-accent bg-accent px-(--gap-lg) py-(--gap-sm) font-medium text-white transition-transform active:scale-[0.98]"
             >
               Try Again
             </button>
           </div>
         ) : (
-          <ul className="mt-8 flex flex-col gap-[var(--gap-md)]">
+          <ul className="mt-8 flex flex-col gap-(--gap-md)">
             {STEPS.map(({ stage, label }, idx) => {
               const status =
                 idx < currentIdx
@@ -159,14 +146,14 @@ export default function Analyzing({
               return (
                 <li
                   key={stage}
-                  className="flex items-center gap-[var(--gap-md)] rounded-[var(--r-lg)] border border-[var(--border)] bg-[var(--surface)] px-[var(--gap-lg)] py-[var(--gap-md)] transition-colors"
+                  className="flex items-center gap-(--gap-md) rounded-(--r-lg) border border-border bg-(--surface) px-(--gap-lg) py-(--gap-md) transition-colors"
                 >
                   <StatusIcon status={status} />
                   <span
                     className={`text-[15px] transition-colors ${
                       status === "pending"
-                        ? "text-[var(--muted-2)]"
-                        : "text-[var(--text)]"
+                        ? "text-(--muted-2)"
+                        : "text-(--text)"
                     }`}
                   >
                     {label}
@@ -185,7 +172,7 @@ function StatusIcon({ status }: { status: "pending" | "active" | "done" }) {
   if (status === "done") {
     return (
       <CircleCheck
-        className="h-5 w-5 shrink-0 text-[var(--win)]"
+        className="h-5 w-5 shrink-0 text-(--win)"
         aria-label="Done"
       />
     );
@@ -193,14 +180,14 @@ function StatusIcon({ status }: { status: "pending" | "active" | "done" }) {
   if (status === "active") {
     return (
       <LoaderCircle
-        className="h-5 w-5 shrink-0 animate-spin text-[var(--accent)]"
+        className="h-5 w-5 shrink-0 animate-spin text-accent"
         aria-label="In progress"
       />
     );
   }
   return (
     <Circle
-      className="h-5 w-5 shrink-0 text-[var(--muted-2)]"
+      className="h-5 w-5 shrink-0 text-(--muted-2)"
       aria-label="Pending"
     />
   );
