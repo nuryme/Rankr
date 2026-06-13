@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RANKR — Launch Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* theme gradient — overridden by tweaks */
+    --grad-a: #FF6B4A;
+    --grad-b: #FF2E93;
+    --grad-c: #8B5CF6;
+    --accent: #FF2E93;
+
+    /* neutrals (ink-violet) */
+    --bg:       oklch(0.155 0.018 286);
+    --bg-2:     oklch(0.185 0.02 286);
+    --surface:  oklch(0.205 0.021 286);
+    --surface-2:oklch(0.245 0.024 286);
+    --border:   oklch(0.305 0.024 286);
+    --border-2: oklch(0.38 0.03 286);
+    --text:     oklch(0.975 0.004 286);
+    --muted:    oklch(0.73 0.018 286);
+    --muted-2:  oklch(0.58 0.02 286);
+    --win:      oklch(0.88 0.19 128);
+    --win-dim:  oklch(0.7 0.16 128);
+
+    --r-sm: 8px;
+    --r-md: 14px;
+    --r-lg: 22px;
+    --r-xl: 30px;
+
+    --grad: linear-gradient(110deg, var(--grad-a), var(--grad-b) 52%, var(--grad-c));
+    --shadow-lg: 0 30px 80px -20px rgba(0,0,0,0.6), 0 8px 24px -8px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "DM Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  /* atmospheric background glows */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(60vw 50vw at 85% -10%, color-mix(in oklch, var(--grad-c) 22%, transparent), transparent 60%),
+      radial-gradient(50vw 45vw at 0% 110%, color-mix(in oklch, var(--grad-a) 18%, transparent), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #root { position: relative; z-index: 1; }
+
+  h1, h2, h3, h4, .display { font-family: "Space Grotesk", sans-serif; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+
+  ::selection { background: color-mix(in oklch, var(--accent) 40%, transparent); }
+
+  /* scrollbar */
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 20px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea { font-family: inherit; }
+
+  .grad-text {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse-ring { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+  @keyframes pop-in { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: none; } }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  @keyframes float-up { from { opacity:0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+
+  .stagger > * { opacity: 0; animation: pop-in 0.5s cubic-bezier(0.2,0.7,0.3,1) forwards; }
+  .stagger > *:nth-child(1) { animation-delay: 0.04s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.10s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.16s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.22s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.28s; }
+
+  /* safety: when the document is backgrounded, animations pause at opacity:0 —
+     reveal-fallback forces resting state so content is never invisible */
+  .reveal-fallback .stagger > *,
+  .reveal-fallback .step-anim,
+  .reveal-fallback .enter-anim { opacity: 1 !important; transform: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001s !important; }
+  }
+
+  /* results layout */
+  .results-wrap { max-width: 940px; margin: 0 auto; padding: 26px clamp(18px, 4vw, 44px) 140px; }
+  .stepper { display: flex; gap: 8px; margin-bottom: 30px; }
+  .stepper-seg { flex: 1; min-width: 0; }
+  .step-foot {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    padding: 16px clamp(18px, 4vw, 44px);
+    background: color-mix(in oklch, var(--bg) 82%, transparent);
+    backdrop-filter: blur(16px); border-top: 1px solid var(--border);
+  }
+  @media (max-width: 560px) {
+    .step-label-text { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    // Reveal content if the tab is backgrounded (CSS animations pause when hidden).
+    // When visible, remove the fallback so native entrance animations play on every screen.
+    (function () {
+      function sync() {
+        document.body.classList.toggle("reveal-fallback", document.hidden);
+      }
+      document.addEventListener("visibilitychange", sync);
+      sync();
+    })();
+  </script>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="components.jsx"></script>
+  <script type="text/babel" src="screens.jsx"></script>
+  <script type="text/babel" src="result-steps.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+
+  <template id="__bundler_thumbnail">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#FF6B4A"/><stop offset="0.5" stop-color="#FF2E93"/><stop offset="1" stop-color="#8B5CF6"/>
+      </linearGradient></defs>
+      <rect width="100" height="100" fill="#23202b"/>
+      <path d="M40 32 L40 68 L70 50 Z" fill="url(#g)"/>
+      <rect x="30" y="74" width="40" height="6" rx="3" fill="url(#g)"/>
+    </svg>
+  </template>
+</body>
+</html>
