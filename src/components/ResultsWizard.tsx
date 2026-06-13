@@ -13,7 +13,11 @@ import ThumbnailStep from "@/components/steps/ThumbnailStep";
 import DescriptionStep from "@/components/steps/DescriptionStep";
 import TagsStep from "@/components/steps/TagsStep";
 import RankStep from "@/components/steps/RankStep";
-import type { AnalysisResult, GeneratedContent } from "@/types";
+import type {
+  AnalysisResult,
+  GeneratedContent,
+  ThumbnailEnhancementCache,
+} from "@/types";
 
 const STEPS: StepHeadProps[] = [
   {
@@ -57,6 +61,8 @@ interface ResultsWizardProps {
   setTagsSel: Dispatch<SetStateAction<string[]>>;
   userThumb: File | null;
   setUserThumb: Dispatch<SetStateAction<File | null>>;
+  enhancementCache: ThumbnailEnhancementCache;
+  setEnhancementCache: Dispatch<SetStateAction<ThumbnailEnhancementCache>>;
 }
 
 export default function ResultsWizard({
@@ -72,7 +78,22 @@ export default function ResultsWizard({
   setTagsSel,
   userThumb,
   setUserThumb,
+  enhancementCache,
+  setEnhancementCache,
 }: ResultsWizardProps) {
+  // Mirrors ThumbnailStep's pending check: while Step 2's canvas enhancement
+  // is in flight, navigating away unmounts it and discards the in-progress
+  // result (its effect cleanup sets `cancelled = true`). Disable navigation
+  // until it lands so the cache actually gets populated.
+  const picks =
+    analysisResult.thumbnailFrameIndices.length > 0
+      ? analysisResult.thumbnailFrameIndices
+      : analysisResult.frames.map((_, i) => i).slice(0, 4);
+  const thumbnailPending =
+    step === 1 &&
+    (picks.some((idx) => !(idx in enhancementCache.frames)) ||
+      (userThumb !== null && enhancementCache.custom?.file !== userThumb));
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[920px] flex-col px-4 py-8 sm:px-6">
       {/* Step nav — clickable, wraps on mobile */}
@@ -83,14 +104,17 @@ export default function ResultsWizard({
         {STEPS.map((s, idx) => {
           const isActive = idx === step;
           const isDone = idx < step;
+          const disabled = thumbnailPending && !isActive;
           return (
             <button
               key={s.eyebrow}
               type="button"
               onClick={() => setStep(idx)}
+              disabled={disabled}
+              title={disabled ? "Enhancing thumbnails…" : undefined}
               aria-current={isActive ? "step" : undefined}
               aria-label={`Step ${idx + 1}: ${s.title}`}
-              className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-[var(--r-full)] px-3 font-mono text-[13px] tracking-[0.08em] transition-colors ${
+              className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-[var(--r-full)] px-3 font-mono text-[13px] tracking-[0.08em] transition-colors disabled:pointer-events-none disabled:opacity-50 ${
                 isActive
                   ? "font-bold text-[var(--accent)]"
                   : isDone
@@ -129,6 +153,8 @@ export default function ResultsWizard({
             setThumbSel={setThumbSel}
             userThumb={userThumb}
             setUserThumb={setUserThumb}
+            enhancementCache={enhancementCache}
+            setEnhancementCache={setEnhancementCache}
           />
         ) : null}
         {step === 2 ? (
@@ -155,6 +181,7 @@ export default function ResultsWizard({
             frames={analysisResult.frames}
             thumbSel={thumbSel}
             userThumb={userThumb}
+            enhancementCache={enhancementCache}
           />
         ) : null}
       </div>
@@ -165,6 +192,8 @@ export default function ResultsWizard({
           <Button
             variant="outline"
             onClick={() => setStep(step - 1)}
+            disabled={thumbnailPending}
+            title={thumbnailPending ? "Enhancing thumbnails…" : undefined}
             className="h-auto min-h-[44px] border border-[var(--border)] bg-transparent px-[var(--gap-lg)] text-[var(--text)] hover:bg-[var(--surface)] dark:border-[var(--border)] dark:bg-transparent dark:hover:bg-[var(--surface)]"
           >
             ← Back
@@ -175,6 +204,8 @@ export default function ResultsWizard({
         {step < LAST_STEP ? (
           <Button
             onClick={() => setStep(step + 1)}
+            disabled={thumbnailPending}
+            title={thumbnailPending ? "Enhancing thumbnails…" : undefined}
             className="h-auto min-h-[44px] border border-[var(--accent)] bg-[var(--accent)] px-[var(--gap-lg)] text-white hover:bg-[var(--accent)]"
           >
             Next →

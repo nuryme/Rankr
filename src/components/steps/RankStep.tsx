@@ -5,6 +5,7 @@
 import StepHead, { type StepHeadProps } from "@/components/ui/StepHead";
 import ScoreRing from "@/components/ui/ScoreRing";
 import ExportPackage from "@/components/ui/ExportPackage";
+import type { ThumbnailEnhancementCache } from "@/types";
 
 interface RankStepProps {
   head: StepHeadProps;
@@ -15,6 +16,7 @@ interface RankStepProps {
   frames: string[];
   thumbSel: number;
   userThumb: File | null;
+  enhancementCache: ThumbnailEnhancementCache;
 }
 
 export default function RankStep({
@@ -26,6 +28,7 @@ export default function RankStep({
   frames,
   thumbSel,
   userThumb,
+  enhancementCache,
 }: RankStepProps) {
   return (
     <section>
@@ -46,6 +49,7 @@ export default function RankStep({
           frames={frames}
           thumbSel={thumbSel}
           userThumb={userThumb}
+          enhancementCache={enhancementCache}
         />
       </div>
     </section>

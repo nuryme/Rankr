@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { copyToClipboard } from "@/utils/clipboard";
 import { downloadImage, slugify } from "@/utils/download";
+import type { ThumbnailEnhancementCache } from "@/types";
 
 interface ExportPackageProps {
   title: string;
@@ -19,6 +20,9 @@ interface ExportPackageProps {
   frames: string[];
   thumbSel: number;
   userThumb: File | null;
+  // Canvas-enhanced ('graphics') versions, keyed the same way as the
+  // selection above — used in preference to the raw frame/upload when ready.
+  enhancementCache: ThumbnailEnhancementCache;
 }
 
 // thumbSel sentinel meaning "the custom upload is selected" (matches ThumbnailStep).
@@ -31,6 +35,7 @@ export default function ExportPackage({
   frames,
   thumbSel,
   userThumb,
+  enhancementCache,
 }: ExportPackageProps) {
   const [copied, setCopied] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
@@ -75,16 +80,26 @@ export default function ExportPackage({
   const handleDownloadThumbnail = () => {
     const stem = slugify(title);
     if (thumbSel === CUSTOM && userThumb) {
-      // Custom upload — download the original file untouched.
-      const ext = userThumb.name.split(".").pop()?.toLowerCase() || "png";
-      const url = URL.createObjectURL(userThumb);
-      downloadImage(url, `${stem}.${ext}`, true);
+      const enhanced =
+        enhancementCache.custom?.file === userThumb
+          ? enhancementCache.custom.enhanced
+          : null;
+      if (enhanced) {
+        // Canvas-enhanced ('graphics') version of the custom upload.
+        downloadImage(enhanced, `${stem}.jpg`);
+      } else {
+        // Enhancement not ready (or failed) — download the original file untouched.
+        const ext = userThumb.name.split(".").pop()?.toLowerCase() || "png";
+        const url = URL.createObjectURL(userThumb);
+        downloadImage(url, `${stem}.${ext}`, true);
+      }
     } else {
-      // Raw video frame (base64 JPEG). Once canvas enhancement exists, swap this
-      // source for the enhanced output — the rest of the flow is unchanged.
+      // Canvas-enhanced ('graphics') frame, falling back to the raw video
+      // frame if enhancement hasn't finished (or failed).
+      const enhanced = enhancementCache.frames[thumbSel];
       const frame = frames[thumbSel];
-      if (!frame) return;
-      downloadImage(`data:image/jpeg;base64,${frame}`, `${stem}.jpg`);
+      if (!enhanced && !frame) return;
+      downloadImage(enhanced ?? `data:image/jpeg;base64,${frame}`, `${stem}.jpg`);
     }
     setDownloaded(true);
     if (dlTimeoutRef.current) clearTimeout(dlTimeoutRef.current);

@@ -25,3 +25,11 @@ export interface GeneratedContent {
   tags: string[];
   overallScore: number; // static 0-100, does not recompute on selection change
 }
+
+// Canvas-enhanced thumbnails, cached so revisiting Step 2 doesn't re-run the
+// enhancement animation. Keyed by frame index for the AI-picked frames;
+// `custom` mirrors that for a user-uploaded thumbnail.
+export interface ThumbnailEnhancementCache {
+  frames: Record<number, string>;
+  custom: { file: File; enhanced: string } | null;
+}

@@ -147,7 +147,7 @@
 - Two pill buttons: "BEFORE" | "AFTER"
 - Top-right of preview
 - BEFORE: original frame (or original upload), text "original — toggle AFTER to see the edit"
-- AFTER: enhanced image (color graded, or color graded + headline graphics)
+- AFTER: color-graded image
 - Toggle shows/hides image, swaps text
 
 ### Enhancement Steps (Animate)
@@ -155,21 +155,15 @@ Runs on the 4 AI-picked frames AND on any custom upload:
 1. "Analyzing composition…"
 2. "Boosting contrast & clarity…"
 3. "Punching color saturation…"
-4. "Adding focus vignette…"
-5. "Composing headline & graphics…"
+4. "Finalizing enhancement…"
 
 Total animation time: ~2-3 seconds
 
-### Grade + Graphics Variant (Thumbnail)
-- Darkened headline zone at bottom
-- White stroked headline text (3px stroke), drawn from the selected title (Step 1)
-- Accent gradient frame border
-
-### Color Grade Only Variant
+### Color Grade Variant (Thumbnail)
 - Contrast +16%
 - Color saturation +45%
 - Brightness +5%
-- Vignette (darkened edges)
+- No text or graphics drawn over the image
 
 ### Step Titles (All Steps)
 - Eyebrow: 11px mono, muted, 0.1em letter-spacing

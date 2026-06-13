@@ -20,7 +20,7 @@ function getApiKey(): string {
   return key;
 }
 
-export function getModel(modelName = "gemini-2.5-flash") {
+export function getModel(modelName = "gemini-3.5-flash") {
   const genAI = new GoogleGenerativeAI(getApiKey());
   return genAI.getGenerativeModel({
     model: modelName,
