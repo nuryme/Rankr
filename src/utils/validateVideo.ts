@@ -1,4 +1,4 @@
-export const MAX_FILE_SIZE_BYTES = 1024 * 1024 * 1024;
+export const MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024 * 1024;
 export const MAX_DURATION_SECONDS = 600;
 export const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/quicktime"];
 
@@ -8,7 +8,7 @@ export async function validateVideoFile(file: File): Promise<string | null> {
   }
 
   if (file.size > MAX_FILE_SIZE_BYTES) {
-    return "Video must be smaller than 1GB.";
+    return "Video must be smaller than 3GB.";
   }
 
   const duration = await getVideoDuration(file);

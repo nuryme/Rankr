@@ -67,7 +67,7 @@ export default function Upload({ onFileAccepted }: UploadProps) {
 
           <p className="text-(--text)">
             <span className="font-medium">Drop your video here or click to upload</span>
-            <span className="text-muted"> · MP4 / MOV · up to 10 min, 1GB</span>
+            <span className="text-muted"> · MP4 / MOV · up to 10 min, 3GB</span>
           </p>
 
           {isValidating && (

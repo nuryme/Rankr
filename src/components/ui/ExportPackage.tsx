@@ -46,7 +46,7 @@ export default function ExportPackage({
 
   const exportText = useMemo(
     () =>
-      `TITLE\n${title}\n\nDESCRIPTION\n${description}\n\nTAGS\n${tags.join(", ")}`,
+      `TITLE\n${title}\n\nDESCRIPTION\n${description}\n\nTAGS\n${tags.map((t) => `#${t}`).join(" ")}`,
     [title, description, tags]
   );
 

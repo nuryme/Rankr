@@ -2,7 +2,7 @@
 // locally in an off-screen <video>, sample evenly-spaced frames onto a <canvas>,
 // and return raw base64 JPEGs (the form Gemini's vision API expects).
 //
-// This targets large, high-resolution sources (up to ~1GB / 4K / 10 min), so it
+// This targets large, high-resolution sources (up to ~3GB / 4K / 10 min), so it
 // is written defensively: every wait has a timeout (a stalled seek surfaces as a
 // normal error + "Try Again" rather than an infinite spinner), and we wait for
 // each frame to actually be *presented* before drawing, because on 4K sources the
@@ -26,7 +26,7 @@ const SEEK_TIMEOUT_MS = 30_000;
 // wait for the presented frame, after which we draw anyway rather than stall.
 const FRAME_PRESENT_TIMEOUT_MS = 2_000;
 
-export async function extractFrames(videoFile: File): Promise<string[]> {
+export async function extractFrames(videoFile: File, onProgress?: (pct: number) => void): Promise<string[]> {
   const video = document.createElement("video");
   const url = URL.createObjectURL(videoFile);
 
@@ -66,6 +66,7 @@ export async function extractFrames(videoFile: File): Promise<string[]> {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
       frames.push(stripDataPrefix(dataUrl));
+      onProgress?.(Math.round((frames.length / FRAME_COUNT) * 100));
     }
 
     return frames;
